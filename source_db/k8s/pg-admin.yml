@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin-deployment
+  namespace: lakehouse
+  labels:
+    app: pg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg
+  template:
+    metadata:
+      labels:
+        app: pg
+    spec:
+      containers:
+      - name: pgadmin4-container
+        image: dpage/pgadmin4
+        resources:
+          limits:
+            memory: "1000Mi"
+            cpu: "1000m"
+          requests:
+            memory: "500Mi"
+            cpu: "500m"        
+        ports:
+        - containerPort: 80
+        env:
+        - name: PGADMIN_DEFAULT_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: pg-secret
+              key: pgadmin-default-email
+        - name: PGADMIN_DEFAULT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-secret
+              key: pgadmin-default-password           
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin-service
+  namespace: lakehouse
+  labels:
+    app: pg
+spec:
+  selector:
+    app: pg
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5050
+      targetPort: 80
+      nodePort: 30000  
