@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgdb-service
+  namespace: lakehouse
+  labels:
+    app: pg
+spec:
+  selector:
+    app: pg
+  type: LoadBalancer
+  ports:
+    #- port: 5432
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+      nodePort: 31000
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pgdb
+  namespace: lakehouse
+  labels:
+    app: pg
+spec:
+  serviceName: pgdb-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg
+  template:
+    metadata:
+      labels:
+        app: pg
+    spec:
+      containers:
+        - name: pg-container
+          image: postgres
+          ports:
+          - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret
+                  key: pgdb-root-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret
+                  key: pgdb-root-username
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret
+                  key: pgdb-db-name
+          volumeMounts:
+            - name: pgdb-disk
+              mountPath: /data                  
+  volumeClaimTemplates:
+  - metadata:
+      name: pgdb-disk
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          #ToDo: this size is not mapping to filesystem in the pod       
+          storage: 5Gi  
