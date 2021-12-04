@@ -74,11 +74,11 @@ RUN echo "c.TerminalInteractiveShell.editing_mode = 'vi'" >> ~/.ipython/profile_
 ENV SPARK_HOME=/opt/spark
 ENV PYSPARK_PYTHON=python3
 ENV PYSPARK_DRIVER_PYTHON=python3
-ENV PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.7-src.zip
+ENV PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.2-src.zip
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/spark/bin
 
 EXPOSE 4040 4041 8080 8888
 
-CMD ["notebook", "--no-browser", "--allow-root", "--ip=0.0.0.0", "--port=8888"]
+CMD ["lab", "--no-browser", "--allow-root", "--ip=0.0.0.0", "--port=8888"]
 ENTRYPOINT ["/usr/local/bin/jupyter"]
