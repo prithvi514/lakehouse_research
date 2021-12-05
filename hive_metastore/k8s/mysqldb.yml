@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqldb-service
+  namespace: lakehouse
+  labels:
+    app: hms
+spec:
+  selector:
+    app: hms
+  type: LoadBalancer
+  ports:
+    #- port: 5432
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+      nodePort: 30306
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysqldb
+  namespace: lakehouse
+  labels:
+    app: hms
+spec:
+  serviceName: mysqldb-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hms
+  template:
+    metadata:
+      labels:
+        app: hms
+    spec:
+      containers:
+        - name: mysql-container
+          image: mysql
+          ports:
+          - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysqldb-root-password
+          volumeMounts:
+            - name: mysqldb-disk
+              mountPath: /data                  
+  volumeClaimTemplates:
+  - metadata:
+      name: mysqldb-disk
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          #ToDo: this size is not mapping to filesystem in the pod       
+          storage: 5Gi  
