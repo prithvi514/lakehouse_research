@@ -6,7 +6,7 @@ ARG HADOOP_VERSION=3.3.1
 ARG METASTORE_VERSION=3.0.0
 ARG MYSQL_CONN_VERSION=8.0.26
 
-RUN apt-get update && apt-get install -y curl --no-install-recommends \
+RUN apt-get update && apt-get install -y curl default-mysql-client --no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/*
 
 
@@ -31,4 +31,4 @@ RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java
 	&& ln -s /opt/mysql-connector-java-$MYSQL_CONN_VERSION/mysql-connector-java-$MYSQL_CONN_VERSION.jar /opt/hive-metastore/lib/ 
 
 ADD metastore-site.xml /opt/hive-metastore/conf/
-#ADD core-site.xml /opt/hadoop/etc/hadoop/
+ADD core-site.xml /opt/hadoop/etc/hadoop/

@@ -10,35 +10,30 @@ spec:
         - name: initdb
           image: mysql-conn:v3.0.0
           command: ["mysql"]
-          args: ["-u" ,"root" ,"-p", $(MYSQL_ROOT_PASSWORD)" ,
+          args: ["-u" ,"root" ,"-p$(MYSQL_ROOT_PASSWORD)",
                   "-h", "mysqldb-service.lakehouse.svc.cluster.local",
                   "-P", "3306",
                   "-e", "create database if not exists metastore_db"]
-          # env:
-          #   - name: MYSQL_ROOT_PASSWORD
-          #     valueFrom:
-          #       secretKeyRef:
-          #         name: mysql-secret
-          #         key: mysqldb-root-password
-          envFrom:
-          - secretRef:
-              name: mysql-secret
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysqldb-root-password
       containers:
         - name: initschema
           image: mysql-conn:v3.0.0
           command: ["mysql"]
-          args: ["-u" ,"root" ,"-p", $(MYSQL_ROOT_PASSWORD)" ,
+          args: ["-u" ,"root" ,"-p$(MYSQL_ROOT_PASSWORD)" ,
                   "-h", "mysqldb-service.lakehouse.svc.cluster.local",
                   "-P", "3306",
-                  "<", "/opt/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-3.0.0.mysql.sql"]
-          # env:
-          #   - name: MYSQL_ROOT_PASSWORD
-          #     valueFrom:
-          #       secretKeyRef:
-          #         name: mysql-secret
-          #         key: mysqldb-root-password
-          envFrom:
-          - secretRef:
-              name: mysql-secret                                                  
+                  "metastore_db",
+                  "-e", "source /opt/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-3.0.0.mysql.sql"]
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysqldb-root-password                                                 
       restartPolicy: Never
-  backoffLimit: 4
+  backoffLimit: 1
