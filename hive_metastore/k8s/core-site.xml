@@ -23,7 +23,7 @@
     </property>
     <property>
         <name>fs.defaultFS</name>
-        <value>s3a://mykidong</value>
+        <value>s3a://folder</value>
     </property>
     <property>
         <name>fs.s3a.path.style.access</name>
@@ -31,11 +31,11 @@
     </property>
     <property>
         <name>fs.s3a.access.key</name>
-        <value>my-access-key</value>
+        <value>ACCESSKEY</value>
     </property>
     <property>
         <name>fs.s3a.secret.key</name>
-        <value>my-secret-key</value>
+        <value>SECRETKEY</value>
     </property>
     <property>
         <name>fs.s3a.impl</name>
@@ -43,7 +43,7 @@
     </property>
     <property>
         <name>fs.s3a.endpoint</name>
-        <value>https://s3-endpoint</value>
+        <value>https://folder.s3.us-east-1.amazonaws.com</value>
     </property>
     <property>
         <name>fs.s3a.fast.upload</name>

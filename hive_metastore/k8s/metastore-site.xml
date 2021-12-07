@@ -28,26 +28,32 @@ likely need to add a number of new values. -->
 	</property>
 	<property>
 		<name>javax.jdo.option.ConnectionDriverName</name>
-		<value>com.mysql.jdbc.Driver</value>
+		<value>com.mysql.cj.jdbc.Driver</value>
 	</property>
+	<!-- ToDo: Only works with allowPublicKeyRetrieval=true-->
 	<property>
 		<name>javax.jdo.option.ConnectionURL</name>
-		<value>jdbc:mysql://mysql-service.my-namespace.svc.cluster.local:3306/metastore_db?useSSL=false</value>
+		<value>jdbc:mysql://mysqldb-service.lakehouse.svc.cluster.local:3306/metastore_db?allowPublicKeyRetrieval=true&amp;useSSL=false</value>
 	</property>
 	<property>
 		<name>javax.jdo.option.ConnectionUserName</name>
-		<value>root</value>
+		<value>username</value>
 	</property>
 	<property>
 		<name>javax.jdo.option.ConnectionPassword</name>
-		<value>root</value>
+		<value>password</value>
 	</property>
 	<property>
 		<name>metastore.warehouse.dir</name>
-		<value>s3a://mykidong/warehouse/</value>
+		<value>s3a://folder/warehouse/</value>
 	</property>
 	<property>
 		<name>metastore.thrift.port</name>
 		<value>9083</value>
+	</property>
+	<!-- Default connectionPoolingTYpe is Hikari, update it to dbcp for mysql backend -->
+	<property>
+		<name>datanucleus.connectionPoolingType</name>
+		<value>dbcp</value>
 	</property>
 </configuration>
