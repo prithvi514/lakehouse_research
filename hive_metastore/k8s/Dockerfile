@@ -18,8 +18,6 @@ RUN curl https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hado
 RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.901.jar /opt/hadoop/share/hadoop/common/lib/
 
-ENV HADOOP_HOME="/opt/hadoop"
-ENV PATH="/opt/spark/bin:/opt/hadoop/bin:${PATH}"
 
 RUN curl https://dlcdn.apache.org/hive/hive-standalone-metastore-$METASTORE_VERSION/hive-standalone-metastore-$METASTORE_VERSION-bin.tar.gz \
 	| tar xvz -C /opt/ \
@@ -30,5 +28,16 @@ RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java
 	&& ln -s /opt/mysql-connector-java-$MYSQL_CONN_VERSION/mysql-connector-java-$MYSQL_CONN_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ \
 	&& ln -s /opt/mysql-connector-java-$MYSQL_CONN_VERSION/mysql-connector-java-$MYSQL_CONN_VERSION.jar /opt/hive-metastore/lib/ 
 
+# Exception in thread "main" java.lang.NoSuchMethodError: com.google.common.base.Preconditions.checkArgument(ZLjava/lang/String;Ljava/lang/Object;)
+RUN mv /opt/hive-metastore/lib/guava-19.0.jar /tmp
+RUN cp /opt/hadoop/share/hadoop/common/lib/guava-27.0-jre.jar /opt/hive-metastore/
+
+# ENV variables
+ENV HADOOP_HOME=/opt/hadoop
+ENV HIVE_HOME=/opt/hive-metastore
+ENV HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop/
+ENV PATH="/opt/hadoop/bin:${PATH}"
+
+#Config files
 ADD metastore-site.xml /opt/hive-metastore/conf/
 ADD core-site.xml /opt/hadoop/etc/hadoop/
