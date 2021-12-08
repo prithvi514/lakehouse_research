@@ -43,11 +43,19 @@ RUN wget -q https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py && rm -f 
 
 
 # download and install hadoop
-RUN mkdir -p /opt && \
-    cd /opt && \
-    curl http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | \
-        tar -zx hadoop-${HADOOP_VERSION}/lib/native && \
-    ln -s hadoop-${HADOOP_VERSION} hadoop
+# RUN mkdir -p /opt && \
+#     cd /opt && \
+#     curl http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | \
+#         tar -zx hadoop-${HADOOP_VERSION}/lib/native && \
+#     ln -s hadoop-${HADOOP_VERSION} hadoop
+
+RUN curl https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
+	| tar xvz -C /opt/  \
+	&& ln -s /opt/hadoop-$HADOOP_VERSION /opt/hadoop \
+	&& rm -r /opt/hadoop/share/doc 
+
+RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.901.jar /opt/hadoop/share/hadoop/common/lib/
 
 # download and install spark
 RUN mkdir -p /opt && \
@@ -55,6 +63,10 @@ RUN mkdir -p /opt && \
     curl http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_SPARK_VERSION}.tgz | \
         tar -zx && \
     ln -s spark-${SPARK_VERSION}-bin-hadoop${HADOOP_SPARK_VERSION} spark
+
+# Copy aws jars to Spark
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.901.jar /opt/spark/jars/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.3.1.jar /opt/spark/jars/
 
 # install pyspark
 RUN pip3 install --upgrade pyspark
@@ -71,6 +83,12 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su
 RUN chgrp root /etc/passwd
 RUN chmod ug+rw /etc/passwd
 
+# Configuration files
+# Configuration files
+ADD core-site.xml /opt/hadoop/etc/hadoop/
+ADD core-site.xml /opt/spark/conf/
+ADD spark-defaults.conf /opt/spark/conf/
+ADD hive-site.xml /opt/spark/conf
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
