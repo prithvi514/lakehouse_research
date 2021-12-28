@@ -17,6 +17,7 @@ kubectl cluster-info
 ```
 
 ## Executing Spark Submit
+### Assumes spark-submit is available in local machine. Use `spark_driver` approach if that is not the case
 ```
 ./spark-submit  \
 --deploy-mode cluster \
