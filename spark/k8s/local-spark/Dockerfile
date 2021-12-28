@@ -1,4 +1,4 @@
-ARG java_image_tag=11-jre-slim
+ARG java_image_tag=8-jre-slim
 
 FROM openjdk:${java_image_tag}
 
@@ -54,19 +54,12 @@ RUN curl https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hado
 	&& ln -s /opt/hadoop-$HADOOP_VERSION /opt/hadoop \
 	&& rm -r /opt/hadoop/share/doc 
 
-RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.901.jar /opt/hadoop/share/hadoop/common/lib/
-
 # download and install spark
 RUN mkdir -p /opt && \
     cd /opt && \
     curl http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_SPARK_VERSION}.tgz | \
         tar -zx && \
     ln -s spark-${SPARK_VERSION}-bin-hadoop${HADOOP_SPARK_VERSION} spark
-
-# Copy aws jars to Spark
-RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.563.jar /opt/spark/jars/
-RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.2.2.jar /opt/spark/jars/
 
  # download and install hive
  RUN mkdir -p /opt && \
@@ -112,6 +105,22 @@ ADD core-site.xml /opt/hadoop/etc/hadoop/
 ADD core-site.xml /opt/spark/conf/
 ADD spark-defaults.conf /opt/spark/conf/
 ADD hive-site.xml /opt/spark/conf/
+
+# https://stackoverflow.com/questions/64625111/aws-eks-spark-3-0-hadoop-3-2-error-noclassdeffounderror-com-amazonaws-servic/64625374#64625374
+RUN cd /opt/hadoop/share/hadoop/tools/lib/ && \
+	mv aws-java-sdk-bundle-1.11.563.jar /tmp && \
+	curl https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar --output aws-java-sdk-bundle-1.11.874.jar
+
+RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.874.jar /opt/hadoop/share/hadoop/common/lib/
+
+# Copy aws jars to Hive
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.874.jar /opt/hive/lib/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hive/lib/   
+
+# Copy aws jars to Spark
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.874.jar /opt/spark/jars/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/spark/jars/
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 

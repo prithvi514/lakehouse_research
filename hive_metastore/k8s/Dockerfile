@@ -38,11 +38,11 @@ ENV PATH="/opt/hadoop/bin:${PATH}"
 ADD metastore-site.xml /opt/hive-metastore/conf/
 ADD core-site.xml /opt/hadoop/etc/hadoop/
 
+# https://stackoverflow.com/questions/64625111/aws-eks-spark-3-0-hadoop-3-2-error-noclassdeffounderror-com-amazonaws-servic/64625374#64625374
 RUN cd /opt/hadoop/share/hadoop/tools/lib/ && \
 	mv aws-java-sdk-bundle-1.11.563.jar /tmp && \
 	curl https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar --output aws-java-sdk-bundle-1.11.874.jar
 
-# https://stackoverflow.com/questions/64625111/aws-eks-spark-3-0-hadoop-3-2-error-noclassdeffounderror-com-amazonaws-servic/64625374#64625374
 RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.874.jar /opt/hadoop/share/hadoop/common/lib/
 

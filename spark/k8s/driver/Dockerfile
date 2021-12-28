@@ -68,9 +68,6 @@ RUN mkdir -p /opt && \
         tar -zx && \
     ln -s spark-${SPARK_VERSION}-bin-hadoop${HADOOP_SPARK_VERSION} spark
 
-# Copy aws jars to Spark
-RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.563.jar /opt/spark/jars/
-RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.2.2.jar /opt/spark/jars/
 
 #  download and install hive
  RUN mkdir -p /opt && \
@@ -78,9 +75,7 @@ RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.2.2.jar /opt/spark/jars/
      curl https://dlcdn.apache.org/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz | tar -zx && \
      ln -s apache-hive-3.1.2-bin hive   
 
-# Copy aws jars to Hive
-RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.563.jar /opt/hive/lib/
-RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.2.2.jar /opt/hive/lib/
+
 #Iceberg jars
 RUN cd /opt/spark/jars && \
     curl https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar --output iceberg-spark3-runtime-0.12.0.jar
@@ -120,6 +115,22 @@ ADD hive-site.xml /opt/hive/conf
 # Exception in thread "main" java.lang.NoSuchMethodError: com.google.common.base.Preconditions.checkArgument(ZLjava/lang/String;Ljava/lang/Object;)
 RUN mv /opt/hive/lib/guava-19.0.jar /tmp
 RUN cp /opt/hadoop/share/hadoop/common/lib/guava-27.0-jre.jar /opt/hive/lib/
+
+# https://stackoverflow.com/questions/64625111/aws-eks-spark-3-0-hadoop-3-2-error-noclassdeffounderror-com-amazonaws-servic/64625374#64625374
+RUN cd /opt/hadoop/share/hadoop/tools/lib/ && \
+	mv aws-java-sdk-bundle-1.11.563.jar /tmp && \
+	curl https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar --output aws-java-sdk-bundle-1.11.874.jar
+
+RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.874.jar /opt/hadoop/share/hadoop/common/lib/
+
+# Copy aws jars to Hive
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.874.jar /opt/hive/lib/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hive/lib/   
+
+# Copy aws jars to Spark
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.874.jar /opt/spark/jars/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/spark/jars/
 
 EXPOSE 4040 4041 8080 8888
 
