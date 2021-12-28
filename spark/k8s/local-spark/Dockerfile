@@ -6,8 +6,8 @@ ARG spark_uid=185
 
 
 # define spark and hadoop versions
-ENV SPARK_VERSION=3.2.0
-ENV HADOOP_VERSION=3.3.1
+ENV SPARK_VERSION=3.1.2
+ENV HADOOP_VERSION=3.2.2
 ARG HADOOP_SPARK_VERSION=3.2
 
 
@@ -65,16 +65,39 @@ RUN mkdir -p /opt && \
     ln -s spark-${SPARK_VERSION}-bin-hadoop${HADOOP_SPARK_VERSION} spark
 
 # Copy aws jars to Spark
-RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.901.jar /opt/spark/jars/
-RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.3.1.jar /opt/spark/jars/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.563.jar /opt/spark/jars/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.2.2.jar /opt/spark/jars/
+
+ # download and install hive
+ RUN mkdir -p /opt && \
+     cd /opt && \
+     curl https://dlcdn.apache.org/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz | tar -zx && \
+     ln -s apache-hive-3.1.2-bin hive  
+     
+#Iceberg jars
+RUN cd /opt/spark/jars && \
+    curl https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar --output iceberg-spark3-runtime-0.12.0.jar && \
+    chmod 777 iceberg-spark3-runtime-0.12.0.jar
+
+# Delta jars
+RUN cd /opt/spark/jars && \
+    curl https://repo1.maven.org/maven2/io/delta/delta-core_2.12/1.0.0/delta-core_2.12-1.0.0.jar --output delta-core_2.12-1.0.0.jar && \
+    chmod 777 delta-core_2.12-1.0.0.jar
 
 # install pyspark
-RUN pip3 install --upgrade pyspark
+RUN pip3 install pyspark==3.1.2
+
+# Exception in thread "main" java.lang.NoSuchMethodError: com.google.common.base.Preconditions.checkArgument(ZLjava/lang/String;Ljava/lang/Object;)
+RUN mv /opt/hive/lib/guava-19.0.jar /tmp
+RUN cp /opt/hadoop/share/hadoop/common/lib/guava-27.0-jre.jar /opt/hive/lib/
 
 # Required spark configuration for local user access
 ENV SPARK_HOME=/opt/spark
+ENV HADOOP_HOME=/opt/hadoop
+ENV HIVE_HOME=/opt/hive
 ENV PYSPARK_PYTHON=python3
 ENV PYSPARK_DRIVER_PYTHON=python3
+ENV PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/spark/bin:/opt/spark/jars/
 
 ADD entrypoint.sh /opt/
 RUN chmod a+x /opt/entrypoint.sh
@@ -88,9 +111,9 @@ RUN chmod ug+rw /etc/passwd
 ADD core-site.xml /opt/hadoop/etc/hadoop/
 ADD core-site.xml /opt/spark/conf/
 ADD spark-defaults.conf /opt/spark/conf/
-ADD hive-site.xml /opt/spark/conf
+ADD hive-site.xml /opt/spark/conf/
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
 # Specify the User that the actual main process will run as
-USER ${spark_uid}
+# USER ${spark_uid}
