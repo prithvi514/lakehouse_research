@@ -1,4 +1,4 @@
-ARG java_image_tag=11-jre-slim
+ARG java_image_tag=8-jre-slim
 
 FROM openjdk:${java_image_tag}
 
@@ -6,8 +6,8 @@ ARG spark_uid=185
 
 
 # define spark and hadoop versions
-ENV SPARK_VERSION=3.2.0
-ENV HADOOP_VERSION=3.3.1
+ENV SPARK_VERSION=3.1.2
+ENV HADOOP_VERSION=3.2.2
 ARG HADOOP_SPARK_VERSION=3.2
 
 
@@ -33,6 +33,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         krb5-user \
         libnss3 \
         procps \
+        netcat \
         vim && \
     apt-get clean && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*   
 
@@ -58,7 +59,7 @@ RUN curl https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hado
 	&& rm -r /opt/hadoop/share/doc 
 
 RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-$HADOOP_VERSION.jar /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.901.jar /opt/hadoop/share/hadoop/common/lib/
+    ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.563.jar /opt/hadoop/share/hadoop/common/lib/
 
 # download and install spark
 RUN mkdir -p /opt && \
@@ -68,11 +69,28 @@ RUN mkdir -p /opt && \
     ln -s spark-${SPARK_VERSION}-bin-hadoop${HADOOP_SPARK_VERSION} spark
 
 # Copy aws jars to Spark
-RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.901.jar /opt/spark/jars/
-RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.3.1.jar /opt/spark/jars/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.563.jar /opt/spark/jars/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.2.2.jar /opt/spark/jars/
 
+#  download and install hive
+ RUN mkdir -p /opt && \
+     cd /opt && \
+     curl https://dlcdn.apache.org/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz | tar -zx && \
+     ln -s apache-hive-3.1.2-bin hive   
+
+# Copy aws jars to Hive
+RUN cp /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.563.jar /opt/hive/lib/
+RUN cp /opt/hadoop/share/hadoop/tools/lib/hadoop-aws-3.2.2.jar /opt/hive/lib/
+#Iceberg jars
+RUN cd /opt/spark/jars && \
+    curl https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar --output iceberg-spark3-runtime-0.12.0.jar
+
+# Delta jars
+RUN cd /opt/spark/jars && \
+    curl https://repo1.maven.org/maven2/io/delta/delta-core_2.12/1.0.0/delta-core_2.12-1.0.0.jar --output delta-core_2.12-1.0.0.jar
+    
 # install pyspark
-RUN pip3 install --upgrade pyspark
+RUN pip3 install pyspark==3.1.2
 
 RUN jupyter notebook --generate-config
 RUN sed -i -E 's,^#\s*c.NotebookApp.terminado_settings.*,c.NotebookApp.terminado_settings = {"shell_command" : ["\/bin\/bash"]},g' ~/.jupyter/jupyter_notebook_config.py
@@ -84,17 +102,24 @@ RUN echo "c.TerminalInteractiveShell.editing_mode = 'vi'" >> ~/.ipython/profile_
 
 # Required spark configuration for local user access
 ENV SPARK_HOME=/opt/spark
+ENV HADOOP_HOME=/opt/hadoop
+ENV HIVE_HOME=/opt/hive
 ENV PYSPARK_PYTHON=python3
 ENV PYSPARK_DRIVER_PYTHON=python3
 ENV PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.2-src.zip
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/spark/bin
+ENV PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/spark/bin:/opt/spark/jars/
 
 # Configuration files
 ADD core-site.xml /opt/hadoop/etc/hadoop/
 ADD core-site.xml /opt/spark/conf/
 ADD spark-defaults.conf /opt/spark/conf/
 ADD hive-site.xml /opt/spark/conf
+ADD hive-site.xml /opt/hive/conf
+
+# Exception in thread "main" java.lang.NoSuchMethodError: com.google.common.base.Preconditions.checkArgument(ZLjava/lang/String;Ljava/lang/Object;)
+RUN mv /opt/hive/lib/guava-19.0.jar /tmp
+RUN cp /opt/hadoop/share/hadoop/common/lib/guava-27.0-jre.jar /opt/hive/lib/
 
 EXPOSE 4040 4041 8080 8888
 
