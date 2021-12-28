@@ -23,7 +23,7 @@
     </property>
     <property>
         <name>fs.defaultFS</name>
-        <value>s3a://folder</value>
+        <value>s3a://FOLDERNAME/</value>
     </property>
     <property>
         <name>fs.s3a.path.style.access</name>

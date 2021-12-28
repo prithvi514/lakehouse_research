@@ -22,7 +22,7 @@
         </tr>
         <tr>
             <td rowspan=3>hivemetastore</td>
-            <td rowspan=3>openjdk:11-jre-slim</td>
+            <td rowspan=3>openjdk:8-jre-slim</td>
             <td>Hadoop core</td>
             <td>3.2.2</td>
             <td></td>
@@ -39,7 +39,7 @@
         </tr>
         <tr>
             <td rowspan=5>Spark driver</td>
-            <td rowspan=5>openjdk:11-jre-slim</td>
+            <td rowspan=5>openjdk:8-jre-slim</td>
             <td>Hadoop core</td>
             <td>3.2.2</td>
             <td></td>
@@ -56,17 +56,17 @@
         </tr>
         <tr>
             <td>pyspark</td>
-            <td></td>
+            <td>3.1.2</td>
             <td>pip install</td>
         </tr> 
         <tr>
-            <td>jupyter</td>
+            <td>jupyterlab</td>
             <td></td>
             <td>pip install</td>
         </tr>
         <tr>
             <td rowspan=4>Spark executor</td>
-            <td rowspan=4>openjdk:11-jre-slim</td>
+            <td rowspan=4>openjdk:8-jre-slim</td>
             <td>Hadoop core</td>
             <td>3.2.2</td>
             <td></td>
@@ -83,7 +83,7 @@
         </tr>
         <tr>
             <td>pyspark</td>
-            <td></td>
+            <td>3.1.2</td>
             <td>pip install</td>
         <tr>                                                       
     </tbody>

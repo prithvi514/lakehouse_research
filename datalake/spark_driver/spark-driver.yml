@@ -18,7 +18,7 @@ spec:
       serviceAccountName: spark-sa
       containers:
       - name: my-notebook
-        image: spark-driver:v3.2.0
+        image: spark-driver:v3.1.2
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 8888

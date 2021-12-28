@@ -1,0 +1,12 @@
+{
+    "display_name": "pyspark3.2",
+    "language": "python",
+    "argv": [ "python3", "-m", "ipykernel", "-f", "{connection_file}" ],
+    "env": {
+       "SPARK_HOME": "/opt/spark",
+       "PYTHONPATH": "/opt/spark/python/:/opt/spark/python/lib/py4j-0.10.9.2-src.zip",
+       "PYSPARK_DRIVER_PYTHON": "python3",
+       "PYSPARK_PYTHON": "python3",
+       "PYTHONSTARTUP": "/opt/spark/python/pyspark/shell.py"
+    }
+}

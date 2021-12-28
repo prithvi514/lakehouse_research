@@ -1,4 +1,4 @@
-ARG java_image_tag=11-jre-slim
+ARG java_image_tag=8-jre-slim
 
 FROM openjdk:${java_image_tag}
 

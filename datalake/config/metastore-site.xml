@@ -45,7 +45,7 @@ likely need to add a number of new values. -->
 	</property>
 	<property>
 		<name>metastore.warehouse.dir</name>
-		<value>s3a://folder/warehouse/</value>
+		<value>s3a://FOLDERNAME/warehouse/</value>
 	</property>
 	<property>
 		<name>metastore.thrift.port</name>
