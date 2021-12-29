@@ -33,6 +33,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
         krb5-user \
         libnss3 \
         procps \
+        netcat \
         vim && \
     apt-get clean && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*   
 

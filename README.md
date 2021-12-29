@@ -17,7 +17,7 @@
             <td>mysqldb</td>
             <td>mysql</td>
             <td>mysql</td>
-            <td>latest</td>
+            <td>8.0.27</td>
             <td></td>
         </tr>
         <tr>
